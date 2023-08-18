@@ -1,4 +1,4 @@
-import urllib2
+import urllib
 
 import google.auth.transport.requests
 import google.oauth2.id_token
@@ -24,12 +24,12 @@ def make_authorized_get_request(endpoint, data, method):
     # For Cloud Run, `endpoint` is the URL (hostname + path) receiving the request
     # endpoint = 'https://my-cloud-run-service.run.app/my/awesome/url'
 
-    req = urllib2.Request(endpoint, data, method)
+    req = urllib.request.Request(endpoint, data, method)
 
     auth_req = google.auth.transport.requests.Request()
     id_token = google.oauth2.id_token.fetch_id_token(auth_req, config.AUDIENCE)
 
     req.add_header("Authorization", f"Bearer {id_token}")
-    response = urllib2.urlopen(req)
+    response = urllib.urlopen(req)
 
     return response.read()

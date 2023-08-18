@@ -6,4 +6,3 @@ google-cloud-logging
 flask-cors
 swagger-gen
 protobuf
-urllib2
