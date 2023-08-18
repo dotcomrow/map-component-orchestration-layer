@@ -1,0 +1,8 @@
+flask
+gunicorn
+pybase64
+Authlib
+google-cloud-logging
+flask-cors
+swagger-gen
+protobuf
