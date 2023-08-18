@@ -56,8 +56,8 @@ credentials = Credentials.from_service_account_file(
         'google.key',
         scopes=['https://www.googleapis.com/auth/cloud-platform'])
     
-request = google.auth.transport.requests.Request()
-credentials.refresh(request)
+auth_request = google.auth.transport.requests.Request()
+credentials.refresh(auth_request)
 
 @app.before_request
 def basic_authentication():
