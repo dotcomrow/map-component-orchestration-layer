@@ -59,7 +59,7 @@ def basic_authentication():
     if request.method.lower() == 'options':
         return Response()
 
-@app.post("/")
+@app.get("/user")
 @require_oauth()
 @cross_origin()
 @swagger_metadata(
