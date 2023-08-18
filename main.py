@@ -11,6 +11,7 @@ import json
 from swagger_gen.lib.wrappers import swagger_metadata
 from swagger_gen.lib.security import OAuth as SwaggerOAuth
 from swagger_gen.swagger import Swagger
+from google.oauth2.service_account import Credentials
 
 logClient = google.cloud.logging.Client()
 logClient.setup_logging()
@@ -38,21 +39,25 @@ class MyIntrospectTokenValidator(IntrospectTokenValidator):
     delete_table_built = False
     def introspect_token(self, token_string):
         try:
-            logging.info("Introspecting token")
             request = google.auth.transport.requests.Request()            
             resp_token = google.oauth2.id_token.fetch_id_token(request, audience)
             user = id_token.verify_oauth2_token(resp_token, requests.Request(), app.config['GOOGLE_CLIENT_ID'])
             return user
-        except Exception as e:
-            logging.error(e)
+        except Exception:
             return False
     
     def validate_token(self, token, scopes, request):
-        logging.info("Validating token {token}".format(token=token))
         return token
     
 require_oauth = ResourceProtector()
 require_oauth.register_token_validator(MyIntrospectTokenValidator())
+
+credentials = Credentials.from_service_account_file(
+        'google.key',
+        scopes=['https://www.googleapis.com/auth/cloud-platform'])
+    
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
 
 @app.before_request
 def basic_authentication():
@@ -69,7 +74,7 @@ def addItems():
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token,requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-    
+    user['token'] = credentials.token
     return Response(response=json.dumps(user), status=201, mimetype="application/json")
     
 
