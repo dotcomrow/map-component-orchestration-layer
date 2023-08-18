@@ -70,7 +70,7 @@ def addItems():
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token,requests.Request(), app.config['GOOGLE_CLIENT_ID'])
     
-    return Response(response=json.dumps(user), status=201)
+    return Response(response=json.dumps(user), status=201, mimetype="application/json")
     
 
 swagger = Swagger(
