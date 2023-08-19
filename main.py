@@ -106,16 +106,28 @@ def getUser():
         scopes='https://www.googleapis.com/auth/cloud-platform'
     )
     
-    logging.info(creds.get_access_token())
+    # logging.info(creds.get_access_token())
 
-    headers = {'Authorization': 'Bearer ' + refreshToken(app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], credentials.token)}
-    result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
-    logging.info(result)
+    try:
+        headers = {'Authorization': 'Bearer ' + refreshToken(app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], credentials.token)}
+        result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
+        logging.info(result)
+    except Exception as e:
+        logging.info(e)
+        
+    try:
+        headers = {'Authorization': 'Bearer ' + creds.id_token}
+        result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
+        logging.info(result)
+    except Exception as e:
+        logging.info(e)
     
-    headers = {'Authorization': 'Bearer ' + creds.id_token}
-    result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
-    logging.info(result)
-    
+    try:
+        headers = {'Authorization': 'Bearer ' + resp_token}
+        result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
+        logging.info(result)
+    except Exception as e:
+        logging.info(e) 
     return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
     
 swagger = Swagger(
