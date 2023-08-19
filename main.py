@@ -102,20 +102,22 @@ def getUser():
         token_expiry=None,
         token_uri=GOOGLE_TOKEN_URI,
         user_agent=None,
-        revoke_uri=GOOGLE_REVOKE_URI
+        revoke_uri=GOOGLE_REVOKE_URI,
     )
-    logging.info(creds.access_token)
+    
     logging.info(creds.refresh_token)
     logging.info(creds.id_token)
-    at = creds.get_access_token(httplib2.Http())
-    logging.info(at.access_token)
-    creds.refresh(httplib2.Http())  # refresh the access token (optional)
     logging.info(creds.to_json())
 
 
     headers = {'Authorization': 'Bearer ' + refreshToken(app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], credentials.token)}
     result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
     logging.info(result)
+    
+    headers = {'Authorization': 'Bearer ' + creds.id_token}
+    result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
+    logging.info(result)
+    
     return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
     
 swagger = Swagger(
