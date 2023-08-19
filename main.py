@@ -54,6 +54,28 @@ class MyIntrospectTokenValidator(IntrospectTokenValidator):
 require_oauth = ResourceProtector()
 require_oauth.register_token_validator(MyIntrospectTokenValidator())
 
+METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
+METADATA_URL = 'http://metadata.google.internal/computeMetadata/v1/' \
+                           'instance/service-accounts/default/identity?' \
+                           'audience={}'
+
+def fetch_identity_token(audience):
+    # Construct a URL with the audience and format.
+    url = METADATA_URL.format(audience)
+
+    # Request a token from the metadata server.
+    r = requests.get(url, headers=METADATA_HEADERS)
+
+    r.raise_for_status()
+    return r.text
+
+def ProcessPayload(url):
+    id_token = fetch_identity_token('replace_with_service_url')
+    # Process post request
+    headers        = {'Authorization': f'Bearer {id_token}'}
+    response       = requests.get(url, headers=headers)
+    return response.json()
+
 def refreshToken(client_id, client_secret, refresh_token):
         params = {
                 "grant_type": "refresh_token",
@@ -106,6 +128,12 @@ def getUser():
     )
     
     # logging.info(creds.get_access_token())
+    
+    try:
+        result = ProcessPayload('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234')
+        logging.info(result)
+    except Exception as e:
+        logging.info(e)
 
     try:
         logging.info(credentials.token)
