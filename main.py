@@ -77,7 +77,7 @@ def addItems():
     user = id_token.verify_oauth2_token(resp_token,google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
     headers = {'Authorization': 'Bearer ' + credentials.token}
     result = requests.get('https://map-component-orchestration-layer-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
-    
+    logging.info(result)
     return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
     
 swagger = Swagger(
