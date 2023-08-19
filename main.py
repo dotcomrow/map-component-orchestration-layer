@@ -103,12 +103,12 @@ def getUser():
         token_uri=GOOGLE_TOKEN_URI,
         user_agent=None,
         revoke_uri=GOOGLE_REVOKE_URI,
+        scopes='https://www.googleapis.com/auth/cloud-platform'
     )
     
     logging.info(creds.refresh_token)
     logging.info(creds.id_token)
     logging.info(creds.to_json())
-
 
     headers = {'Authorization': 'Bearer ' + refreshToken(app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], credentials.token)}
     result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
