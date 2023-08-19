@@ -11,7 +11,7 @@ import json
 from swagger_gen.lib.wrappers import swagger_metadata
 from swagger_gen.lib.security import OAuth as SwaggerOAuth
 from swagger_gen.swagger import Swagger
-import auth
+from google.oauth2.service_account import Credentials
 
 logClient = google.cloud.logging.Client()
 logClient.setup_logging()
@@ -52,6 +52,13 @@ class MyIntrospectTokenValidator(IntrospectTokenValidator):
 require_oauth = ResourceProtector()
 require_oauth.register_token_validator(MyIntrospectTokenValidator())
 
+credentials = Credentials.from_service_account_file(
+        'google.key',
+        scopes=['https://www.googleapis.com/auth/cloud-platform'])
+    
+auth_request = google.auth.transport.requests.Request()
+credentials.refresh(auth_request)
+
 @app.before_request
 def basic_authentication():
     if request.method.lower() == 'options':
@@ -67,9 +74,10 @@ def addItems():
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token,requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-    result = auth.make_authorized_get_request("https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234", {}, "GET")
+    headers = {'Authorization': 'Bearer ' + credentials.token}
+    result = requests.get('https://map-component-orchestration-layer-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
     
-    return Response(response=json.dumps(result), status=201, mimetype="application/json")
+    return Response(response=result.to_json(), status=201, mimetype="application/json")
     
 
 swagger = Swagger(
