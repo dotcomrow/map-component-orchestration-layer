@@ -60,11 +60,11 @@ def refreshToken(client_id, client_secret, refresh_token):
                 "client_secret": client_secret,
                 "refresh_token": refresh_token
         }
-
+        logging.info(params)
         authorization_url = "https://oauth2.googleapis.com/token"
 
         r = requests.post(authorization_url, data=params)
-
+        logging.info(r)
         if r.ok:
                 return r.json()['access_token']
         else:
