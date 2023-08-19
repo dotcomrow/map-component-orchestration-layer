@@ -104,7 +104,11 @@ def getUser():
         user_agent=None,
         revoke_uri=GOOGLE_REVOKE_URI
     )
-    logging.info(creds)
+    logging.info(creds.access_token)
+    logging.info(creds.refresh_token)
+    logging.info(creds.id_token)
+    at = creds.get_access_token(httplib2.Http())
+    logging.info(at.access_token)
     creds.refresh(httplib2.Http())  # refresh the access token (optional)
     logging.info(creds.to_json())
 
