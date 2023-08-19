@@ -74,6 +74,7 @@ def getUser():
 
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
+    logging.info(resp_token)
     user = id_token.verify_oauth2_token(resp_token,google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
     headers = {'Authorization': 'Bearer ' + resp_token}
     result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
