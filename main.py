@@ -78,7 +78,7 @@ def addItems():
     headers = {'Authorization': 'Bearer ' + credentials.token}
     result = requests.get('https://map-component-orchestration-layer-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
     
-    return Response(response=result.json(), status=201, mimetype="application/json")
+    return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
     
 
 swagger = Swagger(
