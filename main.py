@@ -12,7 +12,9 @@ from swagger_gen.lib.wrappers import swagger_metadata
 from swagger_gen.lib.security import OAuth as SwaggerOAuth
 from swagger_gen.swagger import Swagger
 from google.oauth2.service_account import Credentials
+from oauth2client import GOOGLE_REVOKE_URI, GOOGLE_TOKEN_URI, client
 import requests
+import httplib2
 
 logClient = google.cloud.logging.Client()
 logClient.setup_logging()
@@ -89,9 +91,23 @@ def getUser():
     auth_request = google.auth.transport.requests.Request()
     credentials.refresh(auth_request)
 
+    creds = client.OAuth2Credentials(
+        access_token=None,  # set access_token to None since we use a refresh token
+        client_id=app.config['GOOGLE_CLIENT_ID'],
+        client_secret=app.config['GOOGLE_CLIENT_SECRET'],
+        refresh_token=credentials.token,
+        token_expiry=None,
+        token_uri=GOOGLE_TOKEN_URI,
+        user_agent=None,
+        revoke_uri=GOOGLE_REVOKE_URI
+    )
+
+    creds.refresh(httplib2.Http())  # refresh the access token (optional)
+    logging.info(creds.to_json())
+
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
-    headers = {'Authorization': 'Bearer ' + refreshToken(app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], resp_token)}
+    headers = {'Authorization': 'Bearer ' + refreshToken(app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], credentials.token)}
     result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
     logging.info(result)
     return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
