@@ -97,14 +97,14 @@ def getUser():
         access_token=None,  # set access_token to None since we use a refresh token
         client_id=app.config['GOOGLE_CLIENT_ID'],
         client_secret=app.config['GOOGLE_CLIENT_SECRET'],
-        # refresh_token=credentials.token,
+        refresh_token=credentials.token,
         id_token=resp_token,
         token_expiry=None,
         token_uri=GOOGLE_TOKEN_URI,
         user_agent=None,
         revoke_uri=GOOGLE_REVOKE_URI
     )
-
+    logging.info(creds)
     creds.refresh(httplib2.Http())  # refresh the access token (optional)
     logging.info(creds.to_json())
 
