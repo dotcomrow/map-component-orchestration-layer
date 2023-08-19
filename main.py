@@ -53,13 +53,6 @@ class MyIntrospectTokenValidator(IntrospectTokenValidator):
 require_oauth = ResourceProtector()
 require_oauth.register_token_validator(MyIntrospectTokenValidator())
 
-credentials = Credentials.from_service_account_file(
-        'google.key',
-        scopes=['https://www.googleapis.com/auth/cloud-platform'])
-    
-auth_request = google.auth.transport.requests.Request()
-credentials.refresh(auth_request)
-
 @app.before_request
 def basic_authentication():
     if request.method.lower() == 'options':
@@ -71,11 +64,18 @@ def basic_authentication():
 @swagger_metadata(
     security='google'
 )
-def addItems():
+def getUser():
+    credentials = Credentials.from_service_account_file(
+        'google.key',
+        scopes=['https://www.googleapis.com/auth/cloud-platform'])
+    
+    auth_request = google.auth.transport.requests.Request()
+    credentials.refresh(auth_request)
+
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token,google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-    headers = {'Authorization': 'Bearer ' + credentials.token}
+    headers = {'Authorization': 'Bearer ' + resp_token}
     result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
     logging.info(result)
     return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
