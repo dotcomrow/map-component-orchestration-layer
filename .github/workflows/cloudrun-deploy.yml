@@ -47,6 +47,13 @@ jobs:
                 replace: ${{ secrets.AUDIENCE }}
                 regex: false
 
+        - name: Find and Replace
+          uses: jacobtomlinson/gha-find-replace@v3
+          with:
+                find: "<DATA_LAYER_URL>"
+                replace: ${{ secrets.DATA_LAYER_URL }}
+                regex: false
+
         - name: get repository name
           run: echo "REPOSITORY_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
 

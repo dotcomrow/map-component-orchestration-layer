@@ -67,11 +67,11 @@ def fetch_identity_token(audience):
     r.raise_for_status()
     return r.text
 
-def ProcessPayload(url):
+def ProcessPayload(url, method, payload):
     id_token = fetch_identity_token(url)
-    # Process post request
+    
     headers        = {'Authorization': f'Bearer {id_token}'}
-    response       = requests.get(url, headers=headers)
+    response       = requests.request(method, url, data=payload, headers=headers)
     logging.info(response)
     return response.json()
 
@@ -80,19 +80,32 @@ def basic_authentication():
     if request.method.lower() == 'options':
         return Response()
 
-@app.get("/user")
+@app.get("/map-data")
 @require_oauth()
 @cross_origin()
 @swagger_metadata(
     security='google'
 )
-def getUser():
+def getData():
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID']) 
-    result = ProcessPayload('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/' + user['sub'])
+    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'GET', None)
         
     return Response(response=json.dumps(result), status=200, mimetype="application/json")
+
+@app.post("/map-data")
+@require_oauth()
+@cross_origin()
+@swagger_metadata(
+    security='google'
+)
+def saveData():
+    googleRequest = google.auth.transport.requests.Request()            
+    resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
+    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID']) 
+    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'POST', request.data)
+    return Response(response=json.dumps(result), status=200, mimetype="application/json") 
     
 swagger = Swagger(
     app=app,
