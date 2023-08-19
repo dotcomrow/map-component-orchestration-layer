@@ -3,7 +3,7 @@ from authlib.integrations.flask_client import OAuth
 from authlib.oauth2.rfc7662 import IntrospectTokenValidator
 from authlib.integrations.flask_oauth2 import ResourceProtector
 from google.oauth2 import id_token
-from google.auth.transport import requests
+from google.auth.transport import requests as google_requests
 from flask_cors import CORS, cross_origin
 import google.cloud.logging
 import logging
@@ -12,6 +12,7 @@ from swagger_gen.lib.wrappers import swagger_metadata
 from swagger_gen.lib.security import OAuth as SwaggerOAuth
 from swagger_gen.swagger import Swagger
 from google.oauth2.service_account import Credentials
+import requests
 
 logClient = google.cloud.logging.Client()
 logClient.setup_logging()
@@ -41,7 +42,7 @@ class MyIntrospectTokenValidator(IntrospectTokenValidator):
         try:
             request = google.auth.transport.requests.Request()            
             resp_token = google.oauth2.id_token.fetch_id_token(request, audience)
-            user = id_token.verify_oauth2_token(resp_token, requests.Request(), app.config['GOOGLE_CLIENT_ID'])
+            user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
             return user
         except Exception:
             return False
@@ -73,7 +74,7 @@ def basic_authentication():
 def addItems():
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
-    user = id_token.verify_oauth2_token(resp_token,requests.Request(), app.config['GOOGLE_CLIENT_ID'])
+    user = id_token.verify_oauth2_token(resp_token,google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
     headers = {'Authorization': 'Bearer ' + credentials.token}
     result = requests.get('https://map-component-orchestration-layer-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
     
