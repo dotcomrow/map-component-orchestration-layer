@@ -95,7 +95,7 @@ def getUser():
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID']) 
     result = ProcessPayload('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/' + user['sub'])
         
-    return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
+    return Response(response=json.dumps(result), status=201, mimetype="application/json")
     
 swagger = Swagger(
     app=app,
