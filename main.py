@@ -8,11 +8,12 @@ from flask_cors import CORS, cross_origin
 import google.cloud.logging
 import logging
 import json
+from marshmallow import ValidationError
 from swagger_gen.lib.wrappers import swagger_metadata
 from swagger_gen.lib.security import OAuth as SwaggerOAuth
 from swagger_gen.swagger import Swagger
 import requests
-import schema
+import schema as ormSchema
 
 logClient = google.cloud.logging.Client()
 logClient.setup_logging()
@@ -108,8 +109,13 @@ def saveData():
     
     if request_data is None:
         return Response(response=json.dumps({'message': 'No data provided'}), status=400, mimetype="application/json")
-     
-    if not schema.validate(request_data):
+    
+    schema = ormSchema.BaseSchema()
+    try:
+        # Validate request body against schema data types
+        result = schema.load(request_data)
+    except ValidationError as err:
+        logging.error(err.messages)
         return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
     
     result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'POST', request_data)
