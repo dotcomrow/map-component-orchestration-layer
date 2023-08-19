@@ -11,8 +11,6 @@ import json
 from swagger_gen.lib.wrappers import swagger_metadata
 from swagger_gen.lib.security import OAuth as SwaggerOAuth
 from swagger_gen.swagger import Swagger
-from google.oauth2.service_account import Credentials
-from oauth2client import GOOGLE_REVOKE_URI, GOOGLE_TOKEN_URI, client
 import requests
 
 logClient = google.cloud.logging.Client()
@@ -67,7 +65,6 @@ def fetch_identity_token(audience):
     r = requests.get(url, headers=METADATA_HEADERS)
 
     r.raise_for_status()
-    logging.info(r.text)
     return r.text
 
 def ProcessPayload(url):
@@ -95,7 +92,7 @@ def getUser():
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID']) 
     result = ProcessPayload('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/' + user['sub'])
         
-    return Response(response=json.dumps(result), status=201, mimetype="application/json")
+    return Response(response=json.dumps(result), status=200, mimetype="application/json")
     
 swagger = Swagger(
     app=app,
