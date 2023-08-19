@@ -67,13 +67,15 @@ def fetch_identity_token(audience):
     r = requests.get(url, headers=METADATA_HEADERS)
 
     r.raise_for_status()
+    logging.info(r.text)
     return r.text
 
 def ProcessPayload(url):
-    id_token = fetch_identity_token('replace_with_service_url')
+    id_token = fetch_identity_token(url)
     # Process post request
     headers        = {'Authorization': f'Bearer {id_token}'}
     response       = requests.get(url, headers=headers)
+    logging.info(response)
     return response.json()
 
 def refreshToken(client_id, client_secret, refresh_token):
