@@ -78,23 +78,6 @@ def ProcessPayload(url):
     logging.info(response)
     return response.json()
 
-def refreshToken(client_id, client_secret, refresh_token):
-        params = {
-                "grant_type": "refresh_token",
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "refresh_token": refresh_token
-        }
-        logging.info(params)
-        authorization_url = "https://oauth2.googleapis.com/token"
-
-        r = requests.post(authorization_url, data=params)
-        logging.info(r)
-        if r.ok:
-                return r.json()['access_token']
-        else:
-                return None
-
 @app.before_request
 def basic_authentication():
     if request.method.lower() == 'options':
@@ -107,59 +90,10 @@ def basic_authentication():
     security='google'
 )
 def getUser():
-    credentials = Credentials.from_service_account_file(
-        'google.key',
-        scopes=['https://www.googleapis.com/auth/cloud-platform'])
-    
-    auth_request = google.auth.transport.requests.Request()
-    credentials.refresh(auth_request)
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
-
-    creds = client.OAuth2Credentials(
-        access_token=None,  # set access_token to None since we use a refresh token
-        client_id=app.config['GOOGLE_CLIENT_ID'],
-        client_secret=app.config['GOOGLE_CLIENT_SECRET'],
-        refresh_token=credentials.token,
-        id_token=resp_token,
-        token_expiry=None,
-        token_uri=GOOGLE_TOKEN_URI,
-        user_agent=None,
-        revoke_uri=GOOGLE_REVOKE_URI,
-        scopes='https://www.googleapis.com/auth/cloud-platform'
-    )
     
-    # logging.info(creds.get_access_token())
-    
-    try:
-        result = ProcessPayload('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234')
-        logging.info(result)
-    except Exception as e:
-        logging.info(e)
-
-    try:
-        logging.info(credentials.token)
-        headers = {'Authorization': 'Bearer ' + refreshToken(app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], credentials.token)}
-        result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
-        logging.info(result)
-    except Exception as e:
-        logging.info(e)
-        
-    try:
-        logging.info(creds.id_token)
-        headers = {'Authorization': 'Bearer ' + creds.id_token}
-        result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
-        logging.info(result)
-    except Exception as e:
-        logging.info(e)
-    
-    try:
-        logging.info(resp_token)
-        headers = {'Authorization': 'Bearer ' + resp_token}
-        result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
-        logging.info(result)
-    except Exception as e:
-        logging.info(e) 
+    result = ProcessPayload('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/' + resp_token['sub'])
         
     return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
     
