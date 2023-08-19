@@ -12,6 +12,7 @@ from swagger_gen.lib.wrappers import swagger_metadata
 from swagger_gen.lib.security import OAuth as SwaggerOAuth
 from swagger_gen.swagger import Swagger
 import requests
+import schema
 
 logClient = google.cloud.logging.Client()
 logClient.setup_logging()
@@ -91,7 +92,6 @@ def getData():
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID']) 
     result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'GET', None)
-        
     return Response(response=json.dumps(result), status=200, mimetype="application/json")
 
 @app.post("/map-data")
@@ -103,8 +103,16 @@ def getData():
 def saveData():
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
-    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID']) 
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'POST', request.data)
+    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
+    request_data = request.get_json()
+    
+    if request_data is None:
+        return Response(response=json.dumps({'message': 'No data provided'}), status=400, mimetype="application/json")
+     
+    if not schema.validate(request_data):
+        return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
+    
+    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'POST', request_data)
     return Response(response=json.dumps(result), status=200, mimetype="application/json") 
     
 swagger = Swagger(
