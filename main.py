@@ -80,7 +80,6 @@ def addItems():
     
     return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
     
-
 swagger = Swagger(
     app=app,
     title='Test API',
