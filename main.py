@@ -53,6 +53,23 @@ class MyIntrospectTokenValidator(IntrospectTokenValidator):
 require_oauth = ResourceProtector()
 require_oauth.register_token_validator(MyIntrospectTokenValidator())
 
+def refreshToken(client_id, client_secret, refresh_token):
+        params = {
+                "grant_type": "refresh_token",
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "refresh_token": refresh_token
+        }
+
+        authorization_url = "https://oauth2.googleapis.com/token"
+
+        r = requests.post(authorization_url, data=params)
+
+        if r.ok:
+                return r.json()['access_token']
+        else:
+                return None
+
 @app.before_request
 def basic_authentication():
     if request.method.lower() == 'options':
@@ -74,9 +91,7 @@ def getUser():
 
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
-    logging.info(resp_token)
-    user = id_token.verify_oauth2_token(resp_token,google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-    headers = {'Authorization': 'Bearer ' + resp_token}
+    headers = {'Authorization': 'Bearer ' + refreshToken(app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], resp_token)}
     result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
     logging.info(result)
     return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
