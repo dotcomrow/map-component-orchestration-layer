@@ -14,7 +14,6 @@ from swagger_gen.swagger import Swagger
 from google.oauth2.service_account import Credentials
 from oauth2client import GOOGLE_REVOKE_URI, GOOGLE_TOKEN_URI, client
 import requests
-import httplib2
 
 logClient = google.cloud.logging.Client()
 logClient.setup_logging()
@@ -109,6 +108,7 @@ def getUser():
     # logging.info(creds.get_access_token())
 
     try:
+        logging.info(credentials.token)
         headers = {'Authorization': 'Bearer ' + refreshToken(app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], credentials.token)}
         result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
         logging.info(result)
@@ -116,6 +116,7 @@ def getUser():
         logging.info(e)
         
     try:
+        logging.info(creds.id_token)
         headers = {'Authorization': 'Bearer ' + creds.id_token}
         result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
         logging.info(result)
@@ -123,11 +124,13 @@ def getUser():
         logging.info(e)
     
     try:
+        logging.info(resp_token)
         headers = {'Authorization': 'Bearer ' + resp_token}
         result = requests.get('https://map-component-data-svc-j75axteyza-ue.a.run.app/map_component_poi_data/1234', headers=headers)
         logging.info(result)
     except Exception as e:
         logging.info(e) 
+        
     return Response(response=json.dumps(result.json()), status=201, mimetype="application/json")
     
 swagger = Swagger(
