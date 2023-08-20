@@ -121,7 +121,24 @@ def saveData():
     
     result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'POST', request_data)
     return Response(response=json.dumps(result), status=200, mimetype="application/json") 
+
+@app.delete("/map-data/<path:item_id>")
+@require_oauth()
+@cross_origin()
+@swagger_metadata(
+    security='google'
+)
+def deleteData(item_id):
+    googleRequest = google.auth.transport.requests.Request()            
+    resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
+    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
+     
+    if item_id is None:
+        return Response(response=json.dumps({'message': 'Item ID is required'}), status=400, mimetype="application/json")
     
+    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'DELETE', None)
+    return Response(response=json.dumps(result), status=200, mimetype="application/json") 
+
 swagger = Swagger(
     app=app,
     title='Test API',
