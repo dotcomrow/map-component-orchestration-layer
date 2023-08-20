@@ -72,8 +72,9 @@ def fetch_identity_token(audience):
 def ProcessPayload(url, method, payload):
     id_token = fetch_identity_token(url)
     
-    headers        = {'Authorization': f'Bearer {id_token}'}
-    logging.info(payload)
+    headers        = {
+        'Authorization': f'Bearer {id_token}',
+        'Content-Type': 'application/json'}
     response       = requests.request(method, url, data=payload, headers=headers)
     logging.info(response)
     return response.json()
