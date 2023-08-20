@@ -137,7 +137,12 @@ def deleteData(item_id):
         return Response(response=json.dumps({'message': 'Item ID is required'}), status=400, mimetype="application/json")
     
     result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'DELETE', None)
-    return Response(response=json.dumps(result), status=200, mimetype="application/json") 
+    if result.status_code == 200:
+        return Response(response=json.dumps({'message': 'Item deleted'}), status=200, mimetype="application/json")
+    elif result.status_code == 404:
+        return Response(response=json.dumps({'message': 'Item not found'}), status=200, mimetype="application/json")
+    else:
+        return Response(response=json.dumps({'message': 'Error deleting item'}), status=500, mimetype="application/json")
 
 swagger = Swagger(
     app=app,
