@@ -73,6 +73,7 @@ def ProcessPayload(url, method, payload):
     id_token = fetch_identity_token(url)
     
     headers        = {'Authorization': f'Bearer {id_token}'}
+    logging.info(payload)
     response       = requests.request(method, url, data=payload, headers=headers)
     logging.info(response)
     return response.json()
