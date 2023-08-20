@@ -136,7 +136,7 @@ def deleteData(item_id):
     if item_id is None:
         return Response(response=json.dumps({'message': 'Item ID is required'}), status=400, mimetype="application/json")
     
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'DELETE', None)
+    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'DELETE', None)
     return Response(response=json.dumps(result), status=200, mimetype="application/json") 
 
 swagger = Swagger(
