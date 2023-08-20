@@ -75,6 +75,7 @@ def ProcessPayload(url, method, payload):
     headers        = {
         'Authorization': f'Bearer {id_token}',
         'Content-Type': 'application/json'}
+    logging.info(payload)
     response       = requests.request(method, url, data=payload, headers=headers)
     logging.info(response)
     return response.json()
