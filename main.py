@@ -76,7 +76,7 @@ def ProcessPayload(url, method, payload):
         'Authorization': f'Bearer {id_token}',
         'Content-Type': 'application/json'}
     response       = requests.request(method, url, json=payload, headers=headers)
-    return response.json()
+    return response
 
 @app.before_request
 def basic_authentication():
@@ -94,7 +94,7 @@ def getData():
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID']) 
     result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'GET', None)
-    return Response(response=json.dumps(result), status=200, mimetype="application/json")
+    return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")
 
 @app.post("/map-data")
 @require_oauth()
@@ -120,7 +120,7 @@ def saveData():
         return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
     
     result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'POST', request_data)
-    return Response(response=json.dumps(result), status=200, mimetype="application/json") 
+    return Response(response=json.dumps(result.json()), status=200, mimetype="application/json") 
 
 @app.delete("/map-data/<path:item_id>")
 @require_oauth()
@@ -136,8 +136,8 @@ def deleteData(item_id):
     if item_id is None:
         return Response(response=json.dumps({'message': 'Item ID is required'}), status=400, mimetype="application/json")
     
-    ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'DELETE', None)
-    return Response(response=json.dumps("{'Result':'Item Deleted'}"), status=200, mimetype="application/json") 
+    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'DELETE', None)
+    return Response(response=json.dumps(result), status=200, mimetype="application/json") 
 
 swagger = Swagger(
     app=app,
