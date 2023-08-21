@@ -9,8 +9,6 @@ import google.cloud.logging
 import logging
 import json
 from marshmallow import ValidationError
-from swagger_gen.lib.wrappers import swagger_metadata
-from swagger_gen.lib.security import OAuth as SwaggerOAuth
 from swagger_gen.swagger import Swagger
 import requests
 import schema as ormSchema
