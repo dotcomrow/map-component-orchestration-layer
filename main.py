@@ -93,8 +93,7 @@ def getData():
     summary='An example route',
     description='This is an example route, check it out!',
     response_model=[(200, 'Success'), (500, 'Error')],
-    query_params=['first_name', 'last_name'],
-    security='bearer')
+    query_params=['first_name', 'last_name'])
 def saveData():
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
