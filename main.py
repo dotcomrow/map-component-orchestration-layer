@@ -9,6 +9,7 @@ import google.cloud.logging
 import logging
 import json
 from marshmallow import ValidationError
+from swagger_gen.lib.wrappers import swagger_metadata
 from swagger_gen.swagger import Swagger
 import requests
 import schema as ormSchema
@@ -87,6 +88,13 @@ def getData():
 @app.post("/map-data")
 @require_oauth()
 @cross_origin()
+@swagger_metadata(
+    request_model={'message' : 'string'},
+    summary='An example route',
+    description='This is an example route, check it out!',
+    response_model=[(200, 'Success'), (500, 'Error')],
+    query_params=['first_name', 'last_name'],
+    security='bearer')
 def saveData():
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
