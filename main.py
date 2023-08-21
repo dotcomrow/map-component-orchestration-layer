@@ -155,6 +155,15 @@ def updateData(item_id):
     result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'PUT', request_data)
     return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")    
 
+swagger = Swagger(
+    app=app,
+    title='Map Component OL API',
+    version='1.0.0',
+    description='This is the API for the Map Component OL'
+)
+
+swagger.configure()
+
 if __name__ == "__main__":
     # Development only: run "python main.py" and open http://localhost:8080
     # When deploying to Cloud Run, a production-grade WSGI HTTP server,
