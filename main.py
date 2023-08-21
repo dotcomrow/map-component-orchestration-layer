@@ -135,7 +135,9 @@ def deleteData(item_id):
 
 swagger = Swagger(
     app=app,
-    title='Map Component OL API'
+    title='Map Component OL API',
+    version='1.0.0',
+    description='This is the API for the Map Component OL'
 )
 
 swagger.configure()
