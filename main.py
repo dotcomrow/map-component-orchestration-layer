@@ -28,13 +28,6 @@ cors = CORS(app, resources={
     # r"/login": {"origins": "*"},
 }, supports_credentials=True)
 oauth = OAuth(app)
-oauth.register(
-    name='google',
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={
-        'scope': 'openid email profile'
-    }
-)
 
 class MyIntrospectTokenValidator(IntrospectTokenValidator):
     table_built = False
@@ -86,9 +79,6 @@ def basic_authentication():
 @app.get("/map-data")
 @require_oauth()
 @cross_origin()
-@swagger_metadata(
-    security='google'
-)
 def getData():
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
@@ -99,9 +89,6 @@ def getData():
 @app.post("/map-data")
 @require_oauth()
 @cross_origin()
-@swagger_metadata(
-    security='google'
-)
 def saveData():
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
@@ -125,9 +112,6 @@ def saveData():
 @app.delete("/map-data/<path:item_id>")
 @require_oauth()
 @cross_origin()
-@swagger_metadata(
-    security='google'
-)
 def deleteData(item_id):
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
@@ -146,12 +130,7 @@ def deleteData(item_id):
 
 swagger = Swagger(
     app=app,
-    title='Test API',
-    auth_schemes=[SwaggerOAuth(
-        name='google',
-        auth_url='https://accounts.google.com/o/oauth2/v2/auth',
-        scopes=[('openid', 'openid'), ('email', 'email'), ('profile', 'profile')]
-    )]
+    title='Map Component OL API'
 )
 
 swagger.configure()
