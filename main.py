@@ -9,10 +9,11 @@ import google.cloud.logging
 import logging
 import json
 from marshmallow import ValidationError
-from swagger_gen.lib.wrappers import swagger_metadata
-from swagger_gen.swagger import Swagger
 import requests
 import schema as ormSchema
+from openapi_gen.lib.wrappers import swagger_metadata
+from openapi_gen.lib.security import OAuth as SwaggerOAuth
+from openapi_gen.swagger import Swagger
 
 logClient = google.cloud.logging.Client()
 logClient.setup_logging()
@@ -75,25 +76,23 @@ def basic_authentication():
     if request.method.lower() == 'options':
         return Response()
 
-@app.get("/map-data")
+@app.get("/map-data/<path:item_id>")
 @require_oauth()
 @cross_origin()
-def getData():
+def getData(item_id):
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
-    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID']) 
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'GET', None)
+    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
+    result = {}
+    if item_id is None:
+        result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'GET', None)
+    else:
+        result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'GET', None)
     return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")
 
 @app.post("/map-data")
 @require_oauth()
 @cross_origin()
-@swagger_metadata(
-    request_model={'message' : 'string'},
-    summary='An example route',
-    description='This is an example route, check it out!',
-    response_model=[(200, 'Success'), (500, 'Error')],
-    query_params=['first_name', 'last_name'])
 def saveData():
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
@@ -132,15 +131,29 @@ def deleteData(item_id):
         return Response(response=json.dumps({'message': 'Item not found'}), status=200, mimetype="application/json")
     else:
         return Response(response=json.dumps({'message': 'Error deleting item'}), status=500, mimetype="application/json")
-
-swagger = Swagger(
-    app=app,
-    title='Map Component OL API',
-    version='1.0.0',
-    description='This is the API for the Map Component OL'
-)
-
-swagger.configure()
+    
+@app.put("/map-data/<path:item_id>")
+@require_oauth()
+@cross_origin()
+def updateData(item_id):
+    googleRequest = google.auth.transport.requests.Request()            
+    resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
+    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
+    request_data = request.get_json()
+    
+    if request_data is None:
+        return Response(response=json.dumps({'message': 'No data provided'}), status=400, mimetype="application/json")
+    
+    schema = ormSchema.BaseSchema()
+    try:
+        # Validate request body against schema data types
+        result = schema.load(request_data)
+    except ValidationError as err:
+        logging.error(err.messages)
+        return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
+    
+    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'PUT', request_data)
+    return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")    
 
 if __name__ == "__main__":
     # Development only: run "python main.py" and open http://localhost:8080

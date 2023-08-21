@@ -4,7 +4,7 @@ pybase64
 Authlib
 google-cloud-logging
 flask-cors
-swagger-gen
+openapi-gen
 protobuf
 oauth2client
 marshmallow
