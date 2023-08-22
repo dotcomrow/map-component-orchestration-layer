@@ -76,85 +76,70 @@ def basic_authentication():
     if request.method.lower() == 'options':
         return Response()
 
-@app.get("/map-data/<path:item_id>")
-@app.get("/map-data", defaults={'item_id': None})
+@app.route("/map-data/<path:item_id>", methods=['GET', 'POST', 'PUT', 'DELETE'], defaults={'item_id': None})
 @require_oauth()
 @cross_origin()
-def getData(item_id):
+def handle_request(item_id):
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-    result = {}
-    if item_id is None:
-        result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'GET', None)
-    else:
-        result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'GET', None)
-    return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")
-
-@app.post("/map-data")
-@require_oauth()
-@cross_origin()
-def saveData():
-    googleRequest = google.auth.transport.requests.Request()            
-    resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
-    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-    request_data = request.get_json()
     
-    if request_data is None:
-        return Response(response=json.dumps({'message': 'No data provided'}), status=400, mimetype="application/json")
-    
-    schema = ormSchema.BaseSchema()
-    try:
-        # Validate request body against schema data types
-        result = schema.load(request_data)
-    except ValidationError as err:
-        logging.error(err.messages)
-        return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
-    
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'POST', request_data)
-    return Response(response=json.dumps(result.json()), status=200, mimetype="application/json") 
-
-@app.delete("/map-data/<path:item_id>")
-@require_oauth()
-@cross_origin()
-def deleteData(item_id):
-    googleRequest = google.auth.transport.requests.Request()            
-    resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
-    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-     
-    if item_id is None:
-        return Response(response=json.dumps({'message': 'Item ID is required'}), status=400, mimetype="application/json")
-    
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'DELETE', None)
-    if result.status_code == 200:
-        return Response(response=json.dumps({'message': 'Item deleted'}), status=200, mimetype="application/json")
-    elif result.status_code == 404:
-        return Response(response=json.dumps({'message': 'Item not found'}), status=200, mimetype="application/json")
-    else:
-        return Response(response=json.dumps({'message': 'Error deleting item'}), status=500, mimetype="application/json")
-    
-@app.put("/map-data/<path:item_id>")
-@require_oauth()
-@cross_origin()
-def updateData(item_id):
-    googleRequest = google.auth.transport.requests.Request()            
-    resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
-    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-    request_data = request.get_json()
-    
-    if request_data is None:
-        return Response(response=json.dumps({'message': 'No data provided'}), status=400, mimetype="application/json")
-    
-    schema = ormSchema.BaseSchema()
-    try:
-        # Validate request body against schema data types
-        result = schema.load(request_data)
-    except ValidationError as err:
-        logging.error(err.messages)
-        return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
-    
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'PUT', request_data)
-    return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")    
+    match (request.method):
+        case 'GET':
+            result = {}
+            if item_id is None:
+                result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'GET', None)
+            else:
+                result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'GET', None)
+            return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")
+        
+        case 'POST':
+            request_data = request.get_json()
+            if request_data is None:
+                return Response(response=json.dumps({'message': 'No data provided'}), status=400, mimetype="application/json")
+            
+            schema = ormSchema.BaseSchema()
+            try:
+                # Validate request body against schema data types
+                result = schema.load(request_data)
+            except ValidationError as err:
+                logging.error(err.messages)
+                return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
+            
+            result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'POST', request_data)
+            return Response(response=json.dumps(result.json()), status=200, mimetype="application/json") 
+            
+        case 'PUT':
+            request_data = request.get_json()
+            if request_data is None:
+                return Response(response=json.dumps({'message': 'No data provided'}), status=400, mimetype="application/json")
+            
+            schema = ormSchema.BaseSchema()
+            try:
+                # Validate request body against schema data types
+                result = schema.load(request_data)
+            except ValidationError as err:
+                logging.error(err.messages)
+                return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
+            
+            result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'PUT', request_data)
+            return Response(response=json.dumps(result.json()), status=200, mimetype="application/json") 
+            
+        case 'DELETE':
+            result = {}
+            if item_id is None:
+                return Response(response=json.dumps({'message': 'Item ID is required'}), status=400, mimetype="application/json")
+            
+            result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'DELETE', None)
+            if result.status_code == 200:
+                return Response(response=json.dumps({'message': 'Item deleted'}), status=200, mimetype="application/json")
+            elif result.status_code == 404:
+                return Response(response=json.dumps({'message': 'Item not found'}), status=200, mimetype="application/json")
+            else:
+                return Response(response=json.dumps({'message': 'Error deleting item'}), status=500, mimetype="application/json")
+            
+        case _:
+            return Response(response=json.dumps({'message': 'Method not allowed'}), status=405, mimetype="application/json")
 
 swagger = Swagger(
     app=app,
