@@ -134,6 +134,9 @@ def handle_request(item_id):
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
     logging.info("item id {}".format(item_id))
+    if item_id.isdigit() == False:
+        return Response(response=json.dumps({'message': 'Invalid item id'}), status=400, mimetype="application/json")
+    item_id = int(item_id)
     match (request.method):
         case 'GET':
             return handle_get(user, item_id)
