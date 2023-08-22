@@ -76,7 +76,7 @@ def basic_authentication():
     if request.method.lower() == 'options':
         return Response()
 
-@app.route("/map-data/<int:item_id>", methods=['GET', 'PUT', 'DELETE'], defaults={'item_id': None})
+@app.route("/map-data/<int:item_id>", methods=['GET', 'PUT', 'DELETE'], defaults={'item_id': -1})
 @app.route("/map-data", methods=['GET', 'POST'], defaults={'item_id': None})
 @require_oauth()
 @cross_origin()
@@ -88,7 +88,7 @@ def handle_request(item_id):
     match (request.method):
         case 'GET':
             result = {}
-            if item_id is None:
+            if item_id < 0:
                 result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'GET', None)
             else:
                 result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'GET', None)
@@ -128,7 +128,7 @@ def handle_request(item_id):
             
         case 'DELETE':
             result = {}
-            if item_id is None:
+            if item_id < 0:
                 return Response(response=json.dumps({'message': 'Item ID is required'}), status=400, mimetype="application/json")
             
             result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'DELETE', None)
