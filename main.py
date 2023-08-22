@@ -84,7 +84,7 @@ def handle_request(item_id):
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-    
+    logging.info("item id -> " + item_id)
     match (request.method):
         case 'GET':
             result = {}
