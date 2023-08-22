@@ -81,7 +81,7 @@ def handle_get(user, item_id):
     if item_id < 0:
         result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'GET', None)
     else:
-        result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'GET', None)
+        result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + str(item_id), 'GET', None)
     return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")
 
 def handle_post(user, request):
@@ -110,7 +110,7 @@ def handle_put(user, request, item_id):
         logging.error(err.messages)
         return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
             
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'PUT', request_data)
+    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + str(item_id), 'PUT', request_data)
     return Response(response=json.dumps(result.json()), status=200, mimetype="application/json") 
 
 def handle_delete(item_id, user):
@@ -118,7 +118,7 @@ def handle_delete(item_id, user):
     if item_id < 0:
         return Response(response=json.dumps({'message': 'Item ID is required'}), status=400, mimetype="application/json")
             
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'DELETE', None)
+    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + str(item_id), 'DELETE', None)
     if result.status_code == 200:
         return Response(response=json.dumps({'message': 'Item deleted'}), status=200, mimetype="application/json")
     elif result.status_code == 404:
