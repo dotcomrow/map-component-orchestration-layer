@@ -77,7 +77,7 @@ def basic_authentication():
         return Response()
 
 @app.get("/map-data/<path:item_id>")
-@app.get("/map-data")
+@app.get("/map-data", defaults={'item_id': None})
 @require_oauth()
 @cross_origin()
 def getData(item_id):
