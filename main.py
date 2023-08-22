@@ -60,35 +60,35 @@ def basic_authentication():
 @require_oauth()
 def get():
     user = fetch_user()
-    handle_get(user, -1)
+    return handle_get(user, -1)
     
 @app.route("/map-data", methods=['POST'])
 @cross_origin(supports_credentials=True)
 @require_oauth()
 def post():
     user = fetch_user()
-    handle_post(user, request)
+    return handle_post(user, request)
     
 @app.route("/map-data/<item_id>", methods=['GET'])
 @cross_origin(supports_credentials=True)
 @require_oauth()
 def get_id(item_id):
     user = fetch_user()
-    handle_get(user, item_id)
+    return handle_get(user, item_id)
     
 @app.route("/map-data/<item_id>", methods=['PUT'])
 @cross_origin(supports_credentials=True)
 @require_oauth()
 def put(item_id):
     user = fetch_user()
-    handle_put(user, request, item_id)
+    return handle_put(user, request, item_id)
     
 @app.route("/map-data/<item_id>", methods=['DELETE'])
 @cross_origin(supports_credentials=True)
 @require_oauth()
 def delete(item_id):
     user = fetch_user()
-    handle_delete(item_id, user)
+    return handle_delete(item_id, user)
     
 swagger = Swagger(
     app=app,
