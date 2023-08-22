@@ -14,6 +14,7 @@ import schema as ormSchema
 from openapi_gen.lib.wrappers import swagger_metadata
 from openapi_gen.lib.security import OAuth as SwaggerOAuth
 from openapi_gen.swagger import Swagger
+from handlers import handle_get, handle_post, handle_put, handle_delete
 
 logClient = google.cloud.logging.Client()
 logClient.setup_logging()
@@ -30,12 +31,9 @@ cors = CORS(app, resources={
 oauth = OAuth(app)
 
 class MyIntrospectTokenValidator(IntrospectTokenValidator):
-    table_built = False
-    delete_table_built = False
     def introspect_token(self, token_string):
         try:
-            request = google.auth.transport.requests.Request()            
-            resp_token = google.oauth2.id_token.fetch_id_token(request, audience)
+            resp_token = google.oauth2.id_token.fetch_id_token(google_requests.Request(), audience)
             user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
             return user
         except Exception:
@@ -47,91 +45,16 @@ class MyIntrospectTokenValidator(IntrospectTokenValidator):
 require_oauth = ResourceProtector()
 require_oauth.register_token_validator(MyIntrospectTokenValidator())
 
-METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
-METADATA_URL = 'http://metadata.google.internal/computeMetadata/v1/' \
-                           'instance/service-accounts/default/identity?' \
-                           'audience={}'
-
-def fetch_identity_token(audience):
-    # Construct a URL with the audience and format.
-    url = METADATA_URL.format(audience)
-
-    # Request a token from the metadata server.
-    r = requests.get(url, headers=METADATA_HEADERS)
-
-    r.raise_for_status()
-    return r.text
-
-def ProcessPayload(url, method, payload):
-    id_token = fetch_identity_token(url)
-    
-    headers        = {
-        'Authorization': f'Bearer {id_token}',
-        'Content-Type': 'application/json'}
-    response       = requests.request(method, url, json=payload, headers=headers)
-    return response
-
 @app.before_request
 def basic_authentication():
     if request.method.lower() == 'options':
         return Response()
     
-def handle_get(user, item_id):
-    result = {}
-    if item_id < 0:
-        result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'GET', None)
-    else:
-        result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + str(item_id), 'GET', None)
-    return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")
-
-def handle_post(user, request):
-    request_data = request.get_json()
-    schema = ormSchema.BaseSchema()
-    try:
-        # Validate request body against schema data types
-        result = schema.load(request_data)
-    except ValidationError as err:
-        logging.error(err.messages)
-        return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
-    
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'POST', request_data)
-    return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")
-
-def handle_put(user, request, item_id):
-    request_data = request.get_json()
-    if request_data is None:
-        return Response(response=json.dumps({'message': 'No data provided'}), status=400, mimetype="application/json")
-            
-    schema = ormSchema.BaseSchema()
-    try:
-        # Validate request body against schema data types
-        result = schema.load(request_data)
-    except ValidationError as err:
-        logging.error(err.messages)
-        return Response(response=json.dumps({'message': 'Invalid data provided'}), status=400, mimetype="application/json")
-            
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + str(item_id), 'PUT', request_data)
-    return Response(response=json.dumps(result.json()), status=200, mimetype="application/json") 
-
-def handle_delete(item_id, user):
-    result = {}
-    if item_id < 0:
-        return Response(response=json.dumps({'message': 'Item ID is required'}), status=400, mimetype="application/json")
-            
-    result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + str(item_id), 'DELETE', None)
-    if result.status_code == 200:
-        return Response(response=json.dumps({'message': 'Item deleted'}), status=200, mimetype="application/json")
-    elif result.status_code == 404:
-        return Response(response=json.dumps({'message': 'Item not found'}), status=200, mimetype="application/json")
-    else:
-        return Response(response=json.dumps({'message': 'Error deleting item'}), status=500, mimetype="application/json")
-
 @app.route("/map-data/<item_id>", methods=['GET', 'PUT', 'DELETE'])
 @require_oauth()
 @cross_origin()
 def handle_request(item_id):
-    googleRequest = google.auth.transport.requests.Request()            
-    resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
+    resp_token = google.oauth2.id_token.fetch_id_token(google_requests.Request(), audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
     logging.info("item id {}".format(item_id))
     if item_id.isdigit() == False:
@@ -151,8 +74,7 @@ def handle_request(item_id):
 @require_oauth()
 @cross_origin()
 def handle_request_no_id():
-    googleRequest = google.auth.transport.requests.Request()            
-    resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
+    resp_token = google.oauth2.id_token.fetch_id_token(google_requests.Request(), audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
     
     match (request.method):
