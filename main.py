@@ -76,11 +76,11 @@ def basic_authentication():
     if request.method.lower() == 'options':
         return Response()
 
-@app.get("/getPOI/<path:item_id>")
+@app.get("/map-data/<path:item_id>")
+@app.get("/map-data")
 @require_oauth()
 @cross_origin()
 def getData(item_id):
-    print("get")
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
@@ -91,7 +91,7 @@ def getData(item_id):
         result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'] + "/" + item_id, 'GET', None)
     return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")
 
-@app.post("/postPOI")
+@app.post("/map-data")
 @require_oauth()
 @cross_origin()
 def saveData():
@@ -114,7 +114,7 @@ def saveData():
     result = ProcessPayload(app.config['DATA_LAYER_URL'] + user['sub'], 'POST', request_data)
     return Response(response=json.dumps(result.json()), status=200, mimetype="application/json") 
 
-@app.delete("/deletePOI/<path:item_id>")
+@app.delete("/map-data/<path:item_id>")
 @require_oauth()
 @cross_origin()
 def deleteData(item_id):
@@ -133,7 +133,7 @@ def deleteData(item_id):
     else:
         return Response(response=json.dumps({'message': 'Error deleting item'}), status=500, mimetype="application/json")
     
-@app.put("/putPOI/<path:item_id>")
+@app.put("/map-data/<path:item_id>")
 @require_oauth()
 @cross_origin()
 def updateData(item_id):
