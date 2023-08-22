@@ -45,45 +45,50 @@ class MyIntrospectTokenValidator(IntrospectTokenValidator):
 require_oauth = ResourceProtector()
 require_oauth.register_token_validator(MyIntrospectTokenValidator())
 
+def fetch_user():
+    resp_token = google.oauth2.id_token.fetch_id_token(google_requests.Request(), audience)
+    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
+    return user
+
 @app.before_request
 def basic_authentication():
     if request.method.lower() == 'options':
         return Response()
-    
-@app.route("/map-data/<item_id>", methods=['GET', 'PUT', 'DELETE'])
-@require_oauth()
-@cross_origin()
-def handle_request(item_id):
-    resp_token = google.oauth2.id_token.fetch_id_token(google_requests.Request(), audience)
-    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-    logging.info("item id {}".format(item_id))
-    if item_id.isdigit() == False:
-        return Response(response=json.dumps({'message': 'Invalid item id'}), status=400, mimetype="application/json")
-    item_id = int(item_id)
-    match (request.method):
-        case 'GET':
-            return handle_get(user, item_id)
-        case 'PUT':
-            return handle_put(user, request, item_id)    
-        case 'DELETE':
-            return handle_delete(item_id, user)
-        case _:
-            return Response(response=json.dumps({'message': 'Method not allowed'}), status=405, mimetype="application/json")
 
-@app.route("/map-data", methods=['GET', 'POST'])
+@app.route("/map-data", methods=['GET'])
+@cross_origin(supports_credentials=True)
 @require_oauth()
-@cross_origin()
-def handle_request_no_id():
-    resp_token = google.oauth2.id_token.fetch_id_token(google_requests.Request(), audience)
-    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
+def get():
+    user = fetch_user()
+    handle_get(user, -1)
     
-    match (request.method):
-        case 'GET':
-            return handle_get(user, -1)
-        case 'POST':
-            return handle_post(user, request)
-        case _:
-            return Response(response=json.dumps({'message': 'Method not allowed'}), status=405, mimetype="application/json")
+@app.route("/map-data", methods=['POST'])
+@cross_origin(supports_credentials=True)
+@require_oauth()
+def post():
+    user = fetch_user()
+    handle_post(user, request)
+    
+@app.route("/map-data/<item_id>", methods=['GET'])
+@cross_origin(supports_credentials=True)
+@require_oauth()
+def get_id(item_id):
+    user = fetch_user()
+    handle_get(user, item_id)
+    
+@app.route("/map-data/<item_id>", methods=['PUT'])
+@cross_origin(supports_credentials=True)
+@require_oauth()
+def put(item_id):
+    user = fetch_user()
+    handle_put(user, request, item_id)
+    
+@app.route("/map-data/<item_id>", methods=['DELETE'])
+@cross_origin(supports_credentials=True)
+@require_oauth()
+def delete(item_id):
+    user = fetch_user()
+    handle_delete(item_id, user)
     
 swagger = Swagger(
     app=app,
