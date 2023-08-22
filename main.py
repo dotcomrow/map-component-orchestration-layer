@@ -77,7 +77,7 @@ def basic_authentication():
         return Response()
 
 @app.route("/map-data/<path:item_id>", methods=[ 'PUT', 'DELETE'], defaults={'item_id': None})
-@app.route("/map-data", methods=['GET', 'POST'])
+@app.route("/map-data", methods=['GET', 'POST'], defaults={'item_id': None})
 @require_oauth()
 @cross_origin()
 def handle_request(item_id):
