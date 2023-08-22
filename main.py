@@ -76,8 +76,8 @@ def basic_authentication():
     if request.method.lower() == 'options':
         return Response()
 
-@app.route("/map-data/<int:item_id>", methods=['GET', 'PUT', 'DELETE'], defaults={'item_id': -1})
-@app.route("/map-data", methods=['GET', 'POST'], defaults={'item_id': -1})
+@app.route("/map-data/<int:item_id>", methods=['PUT', 'DELETE'], defaults={'item_id': -1})
+@app.route("/map-data", methods=['GET', 'POST'])
 @require_oauth()
 @cross_origin()
 def handle_request(item_id):
