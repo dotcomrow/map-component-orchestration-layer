@@ -60,7 +60,7 @@ def basic_authentication():
 @require_oauth()
 def get():
     user = fetch_user()
-    return handle_get(user, -1)
+    return handle_get(user, None)
     
 @app.route("/map-data", methods=['POST'])
 @cross_origin(supports_credentials=True)

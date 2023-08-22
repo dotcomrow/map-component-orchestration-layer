@@ -32,10 +32,10 @@ def ProcessPayload(url, method, payload):
 
 def handle_get(user, item_id):
     result = {}
-    if item_id < 0:
+    if item_id is None:
         result = ProcessPayload(config.DATA_LAYER_URL + user['sub'], 'GET', None)
     else:
-        result = ProcessPayload(config.DATA_LAYER_URL + user['sub'] + "/" + str(item_id), 'GET', None)
+        result = ProcessPayload(config.DATA_LAYER_URL + user['sub'] + "/" + item_id, 'GET', None)
     return Response(response=json.dumps(result.json()), status=200, mimetype="application/json")
 
 def handle_post(user, request):
@@ -69,10 +69,10 @@ def handle_put(user, request, item_id):
 
 def handle_delete(item_id, user):
     result = {}
-    if item_id < 0:
+    if item_id is None:
         return Response(response=json.dumps({'message': 'Item ID is required'}), status=400, mimetype="application/json")
             
-    result = ProcessPayload(config.DATA_LAYER_URL + user['sub'] + "/" + str(item_id), 'DELETE', None)
+    result = ProcessPayload(config.DATA_LAYER_URL + user['sub'] + "/" + item_id, 'DELETE', None)
     if result.status_code == 200:
         return Response(response=json.dumps({'message': 'Item deleted'}), status=200, mimetype="application/json")
     elif result.status_code == 404:
