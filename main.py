@@ -58,6 +58,12 @@ def basic_authentication():
 @app.route("/map-data", methods=['GET'])
 @cross_origin(supports_credentials=True)
 @require_oauth()
+@swagger_metadata(
+    summary='Get all map data',
+    description='Get all map data',
+    query_params=[],
+    response_model=[(200, "OK")]
+)
 def get():
     user = fetch_user()
     return handle_get(user, None)
@@ -65,6 +71,13 @@ def get():
 @app.route("/map-data", methods=['POST'])
 @cross_origin(supports_credentials=True)
 @require_oauth()
+@swagger_metadata(
+    summary='Create map data',
+    description='Create map data',
+    query_params=[],
+    request_model=ormSchema.BaseSchema.to_dict(),
+    response_model=[(200, "OK")]
+)
 def post():
     user = fetch_user()
     return handle_post(user, request)
@@ -72,6 +85,13 @@ def post():
 @app.route("/map-data/<item_id>", methods=['GET'])
 @cross_origin(supports_credentials=True)
 @require_oauth()
+@swagger_metadata(
+    summary='Get map data by ID',
+    description='Get map data by ID',
+    query_params=[],
+    request_model=ormSchema.BaseSchema.to_dict(),
+    response_model=[(200, "OK")]
+)
 def get_id(item_id):
     user = fetch_user()
     return handle_get(user, item_id)
@@ -79,6 +99,13 @@ def get_id(item_id):
 @app.route("/map-data/<item_id>", methods=['PUT'])
 @cross_origin(supports_credentials=True)
 @require_oauth()
+@swagger_metadata(
+    summary='Update map data by ID',
+    description='Update map data by ID',
+    query_params=[],
+    request_model=ormSchema.BaseSchema.to_dict(),
+    response_model=[(200, "OK")]
+)
 def put(item_id):
     user = fetch_user()
     return handle_put(user, request, item_id)
@@ -86,6 +113,12 @@ def put(item_id):
 @app.route("/map-data/<item_id>", methods=['DELETE'])
 @cross_origin(supports_credentials=True)
 @require_oauth()
+@swagger_metadata(
+    summary='Delete map data by ID',
+    description='Delete map data by ID',
+    query_params=[],
+    response_model=[(200, "OK")]
+)
 def delete(item_id):
     user = fetch_user()
     return handle_delete(item_id, user)
