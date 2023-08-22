@@ -79,7 +79,6 @@ def basic_authentication():
 @app.get("/map-data/<path:item_id>")
 @require_oauth()
 @cross_origin()
-@swagger_metadata()
 def getData(item_id):
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
