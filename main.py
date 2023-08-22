@@ -126,7 +126,7 @@ def handle_delete(item_id, user):
     else:
         return Response(response=json.dumps({'message': 'Error deleting item'}), status=500, mimetype="application/json")
 
-@app.route("/map-data/<item_id>", methods=['GET', 'PUT', 'DELETE'], defaults={'item_id': -1})
+@app.route("/map-data/<item_id>", methods=['GET', 'PUT', 'DELETE'])
 @require_oauth()
 @cross_origin()
 def handle_request(item_id):
