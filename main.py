@@ -126,7 +126,7 @@ def handle_delete(item_id, user):
     else:
         return Response(response=json.dumps({'message': 'Error deleting item'}), status=500, mimetype="application/json")
 
-@app.route("/map-data/<int:item_id>", methods=['GET', 'PUT', 'DELETE'], defaults={'item_id': -1})
+@app.route("/map-data/<item_id>", methods=['GET', 'PUT', 'DELETE'], defaults={'item_id': -1})
 @require_oauth()
 @cross_origin()
 def handle_request(item_id):
@@ -137,13 +137,10 @@ def handle_request(item_id):
     match (request.method):
         case 'GET':
             return handle_get(user, item_id)
-            
         case 'PUT':
             return handle_put(user, request, item_id)    
-            
         case 'DELETE':
             return handle_delete(item_id, user)
-            
         case _:
             return Response(response=json.dumps({'message': 'Method not allowed'}), status=405, mimetype="application/json")
 
