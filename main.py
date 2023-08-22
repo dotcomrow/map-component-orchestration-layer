@@ -80,6 +80,7 @@ def basic_authentication():
 @require_oauth()
 @cross_origin()
 def getData(item_id):
+    print("get")
     googleRequest = google.auth.transport.requests.Request()            
     resp_token = google.oauth2.id_token.fetch_id_token(googleRequest, audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
