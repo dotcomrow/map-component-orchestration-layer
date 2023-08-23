@@ -79,7 +79,11 @@ def get():
 )
 def getFeatures():
     user = fetch_user()
-    return handle_get_asFeatures(user)
+    bbox = request.args.get('bbox')
+    if bbox is None:
+        return Response(response=json.dumps({'message': 'bbox geometry is required'}), status=400, mimetype="application/json")
+    
+    return handle_get_asFeatures(user, bbox)
     
 @app.route("/map-data", methods=['POST'])
 @cross_origin(supports_credentials=True)

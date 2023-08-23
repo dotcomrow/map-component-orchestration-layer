@@ -80,9 +80,9 @@ def handle_delete(item_id, user):
     else:
         return Response(response=json.dumps({'message': 'Error deleting item'}), status=500, mimetype="application/json")
     
-def handle_get_asFeatures(user):
+def handle_get_asFeatures(user, bbox):
     result = {}
-    result = ProcessPayload(config.DATA_LAYER_URL + user['sub'], 'GET', None)
+    result = ProcessPayload(config.DATA_LAYER_URL + user['sub'] + "?bbox=" + bbox, 'GET', None)
     features=[]
     for item in result.json():
         features.append(item['location'])
