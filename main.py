@@ -79,7 +79,7 @@ def get():
 )
 def getFeatures():
     user = fetch_user()
-    return handle_get_asFeatures(user, None)
+    return handle_get_asFeatures(user)
     
 @app.route("/map-data", methods=['POST'])
 @cross_origin(supports_credentials=True)
