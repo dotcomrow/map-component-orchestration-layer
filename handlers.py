@@ -82,7 +82,18 @@ def handle_delete(item_id, user):
     
 def handle_get_asFeatures(user, bbox):
     result = {}
-    result = ProcessPayload(config.DATA_LAYER_URL + user['sub'] + "?bbox=" + bbox, 'GET', None)
+    box_list = bbox.split(",")
+    if len(box_list) != 4:
+        return Response(response=json.dumps({'message': 'Invalid bbox geometry'}), status=400, mimetype="application/json")
+    
+    for item in box_list:
+        try:
+            float(item)
+        except ValueError:
+            return Response(response=json.dumps({'message': 'Invalid bbox geometry'}), status=400, mimetype="application/json")
+    
+    bbox_wkt = "POLYGON((" + box_list[0] + " " + box_list[1] + "," + box_list[2] + " " + box_list[1] + "," + box_list[2] + " " + box_list[3] + "," + box_list[0] + " " + box_list[3] + "," + box_list[0] + " " + box_list[1] + "))"
+    result = ProcessPayload(config.DATA_LAYER_URL + user['sub'] + "?bbox=" + bbox_wkt, 'GET', None)
     features=[]
     for item in result.json():
         features.append(item['location'])
