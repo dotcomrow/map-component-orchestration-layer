@@ -14,7 +14,7 @@ import schema as ormSchema
 from openapi_gen.lib.wrappers import swagger_metadata
 from openapi_gen.lib.security import OAuth as SwaggerOAuth
 from openapi_gen.swagger import Swagger
-from handlers import handle_get, handle_post, handle_put, handle_delete
+from handlers import handle_get, handle_post, handle_put, handle_delete, handle_get_asFeatures
 
 logClient = google.cloud.logging.Client()
 logClient.setup_logging()
@@ -79,7 +79,7 @@ def get():
 )
 def getFeatures():
     user = fetch_user()
-    return handle_get(user, None)
+    return handle_get_asFeatures(user, None)
     
 @app.route("/map-data", methods=['POST'])
 @cross_origin(supports_credentials=True)
