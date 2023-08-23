@@ -79,3 +79,16 @@ def handle_delete(item_id, user):
         return Response(response=json.dumps({'message': 'Item not found'}), status=200, mimetype="application/json")
     else:
         return Response(response=json.dumps({'message': 'Error deleting item'}), status=500, mimetype="application/json")
+    
+def handle_get_asFeatures(user):
+    result = {}
+    result = ProcessPayload(config.DATA_LAYER_URL + user['sub'], 'GET', None)
+    features=[]
+    for item in result.json():
+        features.append(item['location'])
+    
+    featureCollection = {
+        "type": "FeatureCollection",
+        "features": features
+    }
+    return Response(response=json.dumps(featureCollection), status=200, mimetype="application/json")

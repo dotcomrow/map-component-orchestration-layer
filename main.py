@@ -67,6 +67,19 @@ def basic_authentication():
 def get():
     user = fetch_user()
     return handle_get(user, None)
+
+@app.route("/map-data/features", methods=['GET'])
+@cross_origin(supports_credentials=True)
+@require_oauth()
+@swagger_metadata(
+    summary='Get all map data as feature list',
+    description='Get all map data as feature list',
+    query_params=[],
+    response_model=[(200, "OK")]
+)
+def getFeatures():
+    user = fetch_user()
+    return handle_get(user, None)
     
 @app.route("/map-data", methods=['POST'])
 @cross_origin(supports_credentials=True)
