@@ -54,6 +54,9 @@ jobs:
                 replace: ${{ secrets.DATA_LAYER_URL }}
                 regex: false
 
+        - name: get repository name
+          run: echo "REPOSITORY_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+
         - id: 'auth'
           uses: 'google-github-actions/auth@v1'
           with:
