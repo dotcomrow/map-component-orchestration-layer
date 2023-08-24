@@ -74,7 +74,7 @@ def get():
 @swagger_metadata(
     summary='Get all map data as feature list',
     description='Get all map data as feature list',
-    query_params=[],
+    query_params=["bbox"],
     response_model=[(200, "OK")]
 )
 def getFeatures():
