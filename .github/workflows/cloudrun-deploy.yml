@@ -54,16 +54,6 @@ jobs:
                 replace: ${{ secrets.DATA_LAYER_URL }}
                 regex: false
 
-        - name: get repository name
-          run: echo "REPOSITORY_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
-
-        - name: Writing Google key
-          uses: mobiledevops/secret-to-file-action@v1
-          with:
-            base64-encoded-secret: ${{ secrets.GOOGLE_CREDENTIALS }}
-            filename: "./google.key"
-            is-executable: false
-
         - id: 'auth'
           uses: 'google-github-actions/auth@v1'
           with:
