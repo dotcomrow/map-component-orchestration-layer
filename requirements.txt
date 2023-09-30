@@ -1,7 +1,6 @@
 flask
 gunicorn
 pybase64
-Authlib
 google-cloud-logging
 flask-cors
 openapi-gen
@@ -9,3 +8,4 @@ protobuf
 oauth2client
 marshmallow
 marshmallow_geojson
+google-api-python-client
