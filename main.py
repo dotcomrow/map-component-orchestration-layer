@@ -29,7 +29,7 @@ def authorized_user_decorator(func):
     def inner(*args, **kwargs):
         try:
             token = request.headers.get('Authorization').split(" ")[1]
-            user = id_token.verify_oauth2_token(token, requests.Request(), app.config['GOOGLE_CLIENT_SECRET'])
+            user = id_token.verify_oauth2_token(token, requests.Request(), app.config['GOOGLE_CLIENT_ID'])
             kwargs["user"]= user
         except Exception as e:
             logging.error("Error: " + str(e))
