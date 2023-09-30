@@ -143,7 +143,23 @@ swagger = Swagger(
     description='This is the API for the Map Component OL'
 )
 
-swagger.configure()
+swagger = Swagger(
+    app=app,
+    title='Lookup Codes orchestration API',
+    version='1.0.0',
+    description='This is the API for the Lookup Codes orchestration layer service',
+    auth_schemes=[
+        SwaggerOAuth(
+            "google", 
+            "https://accounts.google.com/o/oauth2/v2/auth", 
+            [("scope","openid"), ("email","email"), ("profile","profile")],
+            "https://www.googleapis.com/oauth2/v3/certs"
+        )
+    ],
+    servers=["<OL_SERVICE_URL>"],
+    produces=["application/json"],
+    schemes=["https"]
+)
 
 if __name__ == "__main__":
     # Development only: run "python main.py" and open http://localhost:8080
