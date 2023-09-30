@@ -1,7 +1,4 @@
 from flask import Flask, request, Response
-from authlib.integrations.flask_client import OAuth
-from authlib.oauth2.rfc7662 import IntrospectTokenValidator
-from authlib.integrations.flask_oauth2 import ResourceProtector
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from flask_cors import CORS, cross_origin
@@ -28,23 +25,22 @@ cors = CORS(app, resources={
     r"/*": {"origins": "*"},
     # r"/login": {"origins": "*"},
 }, supports_credentials=True)
-oauth = OAuth(app)
 
-class MyIntrospectTokenValidator(IntrospectTokenValidator):
-    def introspect_token(self, token_string):
+def authorized_user_decorator(func):
+    def inner(*args, **kwargs):
         try:
-            resp_token = google.oauth2.id_token.fetch_id_token(google_requests.Request(), audience)
-            user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-            return user
-        except Exception:
-            return False
-    
-    def validate_token(self, token, scopes, request):
-        return token
-    
-require_oauth = ResourceProtector()
-require_oauth.register_token_validator(MyIntrospectTokenValidator())
+            token = request.headers.get('Authorization').split(" ")[1]
+            user = id_token.verify_oauth2_token(token, requests.Request(), app.config['GOOGLE_CLIENT_SECRET'])
+            kwargs["user"]= user
+        except Exception as e:
+            logging.error("Error: " + str(e))
+            return Response(response=json.dumps({'message': 'Unauthorized'}), status=401, mimetype="application/json")
+ 
+        return func(*args, **kwargs)
 
+    inner.__name__ = func.__name__
+    return inner
+    
 def fetch_user():
     resp_token = google.oauth2.id_token.fetch_id_token(google_requests.Request(), audience)
     user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
@@ -57,7 +53,7 @@ def basic_authentication():
 
 @app.route("/map-data", methods=['GET'])
 @cross_origin(supports_credentials=True)
-@require_oauth()
+@authorized_user_decorator
 @swagger_metadata(
     summary='Get all map data',
     description='Get all map data',
@@ -70,7 +66,7 @@ def get():
 
 @app.route("/map-data/features", methods=['GET'])
 @cross_origin(supports_credentials=True)
-@require_oauth()
+@authorized_user_decorator
 @swagger_metadata(
     summary='Get all map data as feature list',
     description='Get all map data as feature list',
@@ -87,7 +83,7 @@ def getFeatures():
     
 @app.route("/map-data", methods=['POST'])
 @cross_origin(supports_credentials=True)
-@require_oauth()
+@authorized_user_decorator
 @swagger_metadata(
     summary='Create map data',
     description='Create map data',
@@ -101,7 +97,7 @@ def post():
     
 @app.route("/map-data/<item_id>", methods=['GET'])
 @cross_origin(supports_credentials=True)
-@require_oauth()
+@authorized_user_decorator
 @swagger_metadata(
     summary='Get map data by ID',
     description='Get map data by ID',
@@ -115,7 +111,7 @@ def get_id(item_id):
     
 @app.route("/map-data/<item_id>", methods=['PUT'])
 @cross_origin(supports_credentials=True)
-@require_oauth()
+@authorized_user_decorator
 @swagger_metadata(
     summary='Update map data by ID',
     description='Update map data by ID',
@@ -129,7 +125,7 @@ def put(item_id):
     
 @app.route("/map-data/<item_id>", methods=['DELETE'])
 @cross_origin(supports_credentials=True)
-@require_oauth()
+@authorized_user_decorator
 @swagger_metadata(
     summary='Delete map data by ID',
     description='Delete map data by ID',
