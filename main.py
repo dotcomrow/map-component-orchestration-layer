@@ -1,12 +1,11 @@
 from flask import Flask, request, Response
 from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
 from flask_cors import CORS, cross_origin
 import google.cloud.logging
 import logging
 import json
 from marshmallow import ValidationError
-import requests
+from google.auth.transport import requests
 import schema as ormSchema
 from openapi_gen.lib.wrappers import swagger_metadata
 from openapi_gen.lib.security import OAuth as SwaggerOAuth
