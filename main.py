@@ -39,11 +39,6 @@ def authorized_user_decorator(func):
 
     inner.__name__ = func.__name__
     return inner
-    
-def fetch_user():
-    resp_token = google.oauth2.id_token.fetch_id_token(google_requests.Request(), audience)
-    user = id_token.verify_oauth2_token(resp_token, google_requests.Request(), app.config['GOOGLE_CLIENT_ID'])
-    return user
 
 @app.before_request
 def basic_authentication():
@@ -59,8 +54,8 @@ def basic_authentication():
     query_params=[],
     response_model=[(200, "OK")]
 )
-def get():
-    user = fetch_user()
+def get(*args, **kwargs):
+    user = kwargs.get("user")
     return handle_get(user, None)
 
 @app.route("/map-data/features", methods=['GET'])
@@ -72,8 +67,8 @@ def get():
     query_params=["bbox"],
     response_model=[(200, "OK")]
 )
-def getFeatures():
-    user = fetch_user()
+def getFeatures(*args, **kwargs):
+    user = kwargs.get("user")
     bbox = request.args.get('bbox')
     if bbox is None:
         return Response(response=json.dumps({'message': 'bbox geometry is required'}), status=400, mimetype="application/json")
@@ -90,8 +85,8 @@ def getFeatures():
     request_model=ormSchema.BaseSchema.to_dict(),
     response_model=[(200, "OK")]
 )
-def post():
-    user = fetch_user()
+def post(*args, **kwargs):
+    user = kwargs.get("user")
     return handle_post(user, request)
     
 @app.route("/map-data/<item_id>", methods=['GET'])
@@ -104,8 +99,8 @@ def post():
     request_model=ormSchema.BaseSchema.to_dict(),
     response_model=[(200, "OK")]
 )
-def get_id(item_id):
-    user = fetch_user()
+def get_id(item_id, **kwargs):
+    user = kwargs.get("user")
     return handle_get(user, item_id)
     
 @app.route("/map-data/<item_id>", methods=['PUT'])
@@ -118,8 +113,8 @@ def get_id(item_id):
     request_model=ormSchema.BaseSchema.to_dict(),
     response_model=[(200, "OK")]
 )
-def put(item_id):
-    user = fetch_user()
+def put(item_id, **kwargs):
+    user = kwargs.get("user")
     return handle_put(user, request, item_id)
     
 @app.route("/map-data/<item_id>", methods=['DELETE'])
@@ -131,8 +126,8 @@ def put(item_id):
     query_params=[],
     response_model=[(200, "OK")]
 )
-def delete(item_id):
-    user = fetch_user()
+def delete(item_id, **kwargs):
+    user = kwargs.get("user")
     return handle_delete(item_id, user)
     
 swagger = Swagger(
